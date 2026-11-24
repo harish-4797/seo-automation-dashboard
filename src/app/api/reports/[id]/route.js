@@ -28,6 +28,8 @@ export async function GET(req, { params }) {
   return new NextResponse(pdf, {
     headers: {
       'Content-Type': 'application/pdf',
+      // Without a length the response is chunked and Chrome's PDF viewer can sit on its loading bar.
+      'Content-Length': String(pdf.length),
       'Content-Disposition': `${req.nextUrl.searchParams.get('download') ? 'attachment' : 'inline'}; filename="${filename}"`,
       'Cache-Control': 'private, max-age=3600',
     },
