@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import AuditLive from '@/components/AuditLive';
 import AuditReport from '@/components/AuditReport';
 import JsonViewer from '@/components/JsonViewer';
+import DatabaseRecord from '@/components/DatabaseRecord';
 import RunAuditButton from '@/components/RunAuditButton';
 import { formatDate } from '@/lib/utils';
 
@@ -94,6 +95,8 @@ export default async function AdminAuditPage({ params }) {
           </Card>
         </div>
       )}
+
+      {audit.status === 'COMPLETED' && <DatabaseRecord auditId={audit.id} />}
 
       {result && (
         <div className="space-y-3">

@@ -7,6 +7,12 @@ async function crawlSite(url) {
     timeoutMs: 20000,
     headers: { Accept: 'text/html,application/xhtml+xml' },
   });
+  // An error page (e.g. a firewall's 403 for cloud-hosted crawlers) is not the homepage;
+  // analysing it would produce a confidently wrong audit. Fail the step so it is reported.
+  if (!res.ok) {
+    const blocked = res.status === 403 || res.status === 429 || res.status === 503;
+    throw new Error(`Homepage returned HTTP ${res.status}${blocked ? ' (the site blocked the crawler, common for firewalls that reject cloud-server IPs)' : ''}`);
+  }
   const html = await res.text();
   const finalUrl = res.url || url;
   const origin = new URL(finalUrl).origin;
