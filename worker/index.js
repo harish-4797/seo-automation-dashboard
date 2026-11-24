@@ -47,9 +47,14 @@ worker.on('failed', async (job, err) => {
 worker.on('error', (err) => console.error('[WORKER] Error:', err.message));
 
 // Heartbeat lets the cron route know a dedicated worker is online (so it won't process inline).
+// It carries this instance's id: during a zero-downtime deploy the old instance shuts down after
+// the new one has started, and must not delete the new one's heartbeat.
+const INSTANCE_ID = `${process.env.RENDER_INSTANCE_ID || require('os').hostname()}:${process.pid}`;
+const DEL_IF_OURS = "local v = redis.call('get', KEYS[1]) if v and string.sub(v, 1, #ARGV[1]) == ARGV[1] then return redis.call('del', KEYS[1]) end return 0";
+
 async function heartbeat() {
   try {
-    await connection.set(HEARTBEAT_KEY, new Date().toISOString(), 'EX', Math.ceil((HEARTBEAT_EVERY_MS * 2) / 1000));
+    await connection.set(HEARTBEAT_KEY, `${INSTANCE_ID}@${new Date().toISOString()}`, 'EX', Math.ceil((HEARTBEAT_EVERY_MS * 2) / 1000));
   } catch (err) {
     console.error('[WORKER] Heartbeat failed:', err.message);
   }
@@ -85,7 +90,7 @@ async function shutdown(signal) {
   console.log(`[WORKER] ${signal} received, closing…`);
   server.close();
   await worker.close();
-  await connection.del(HEARTBEAT_KEY).catch(() => {});
+  await connection.eval(DEL_IF_OURS, 1, HEARTBEAT_KEY, `${INSTANCE_ID}@`).catch(() => {});
   await connection.quit().catch(() => {});
   await prisma.$disconnect();
   process.exit(0);
