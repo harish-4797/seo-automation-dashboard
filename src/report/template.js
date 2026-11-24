@@ -7,7 +7,7 @@ function escapeHtml(s) {
 
 const scoreColor = (n) => (n >= 80 ? '#15803d' : n >= 50 ? '#b45309' : '#b91c1c');
 const priorityColor = { CRITICAL: '#b91c1c', HIGH: '#c2410c', MEDIUM: '#a16207', LOW: '#475569' };
-const issueText = (i) => (typeof i === 'string' ? i : i.finding || i.title || i.issue || JSON.stringify(i));
+const { issueText } = require('../lib/issues');
 
 const LABELS = {
   technical: 'Technical',

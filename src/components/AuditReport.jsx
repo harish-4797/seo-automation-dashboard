@@ -2,9 +2,9 @@ import { AlertTriangle, Zap, ListChecks, Sparkles, FileDown } from 'lucide-react
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScoreRing, ScoreBreakdown } from '@/components/Scores';
+import { issueText } from '@/lib/issues';
 
 const PRIORITY = { CRITICAL: 'danger', HIGH: 'warning', MEDIUM: 'info', LOW: 'secondary' };
-const issueText = (i) => (typeof i === 'string' ? i : i?.finding || i?.title || i?.issue || JSON.stringify(i));
 
 function IssueList({ items, empty = 'None found.' }) {
   if (!items?.length) return <p className="text-sm text-muted-foreground">{empty}</p>;
