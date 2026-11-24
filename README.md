@@ -2,7 +2,7 @@
 
 Automated website SEO audits with a BullMQ job pipeline, Claude-powered analysis, PDF reports and WhatsApp/email delivery. The app has two portals: an **internal admin portal** and a **client-facing dashboard**.
 
-> **Live app:** `https://seo-automation-dashboard-woad.vercel.app/login` &nbsp;·&nbsp; **Worker health:** `https://seo-audit-worker-so6i.onrender.com`
+> **Live app:** [seo-automation-dashboard-woad.vercel.app](https://seo-automation-dashboard-woad.vercel.app/login) &nbsp;·&nbsp; **Worker health:** [seo-audit-worker-so6i.onrender.com](https://seo-audit-worker-so6i.onrender.com) &nbsp;·&nbsp; **Demo video (4 min):** [Google Drive](https://drive.google.com/file/d/1KSmW7Ia5TIiQ5W3uJY81KvvIFNiO2suW/view?usp=drivesdk)
 >
 > | Portal | Email | Password |
 > |---|---|---|
