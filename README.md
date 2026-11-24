@@ -7,7 +7,7 @@ Automated website SEO audits with a BullMQ job pipeline, Claude-powered analysis
 > | Portal | Email | Password |
 > |---|---|---|
 > | Admin | `admin@edgelink.demo` | `Admin@123` |
-> | Client | `demo@clovedental.test` | `Client@123` |
+> | Client | `demo@sabkadentist.test` | `Client@123` |
 >
 > The login page also shows these credentials (click to fill).
 

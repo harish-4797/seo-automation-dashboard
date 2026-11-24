@@ -7,7 +7,19 @@ export const dynamic = 'force-dynamic';
 
 async function demoLogins() {
   if (process.env.SHOW_DEMO_LOGINS === 'false') return null;
-  const client = await prisma.client.findFirst({ where: { email: { not: null } }, orderBy: { createdAt: 'asc' } }).catch(() => null);
+  // DEMO_CLIENT_EMAIL picks the demo client; otherwise the one with the latest completed audit,
+  // so the click-to-fill login opens a dashboard that has a report in it.
+  const pinned = process.env.DEMO_CLIENT_EMAIL;
+  const client = pinned
+    ? { email: pinned }
+    : await prisma.audit
+        .findFirst({
+          where: { status: 'COMPLETED', client: { email: { not: null } } },
+          orderBy: { completedAt: 'desc' },
+          select: { client: { select: { email: true } } },
+        })
+        .then((a) => a?.client || prisma.client.findFirst({ where: { email: { not: null } }, orderBy: { createdAt: 'asc' } }))
+        .catch(() => null);
   return {
     admin: { email: process.env.ADMIN_EMAIL, password: process.env.ADMIN_PASSWORD },
     client: client ? { email: client.email, password: process.env.CLIENT_PASSWORD } : null,
