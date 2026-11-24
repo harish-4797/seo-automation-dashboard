@@ -1,7 +1,7 @@
 // app/api/audit/route.js
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { auditQueue } from '@/lib/queue';
+import { auditQueue, wakeWorker } from '@/lib/queue';
 import { getSessionFromRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -19,6 +19,7 @@ export async function POST(req) {
   const audit = await prisma.audit.create({ data: { clientId, currentStep: 'Queued' } });
   try {
     await auditQueue.add('run-audit', { auditId: audit.id }, { jobId: audit.id });
+    await wakeWorker();
   } catch (err) {
     // The row stays QUEUED; the cron route re-enqueues or processes it.
     console.error('[API] Failed to enqueue audit', audit.id, err.message);

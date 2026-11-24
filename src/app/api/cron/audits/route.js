@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { enqueueAudit, isWorkerOnline, getAuditQueue } from '@/lib/queue';
+import { enqueueAudit, isWorkerOnline, getAuditQueue, wakeWorker } from '@/lib/queue';
 import { runAudit } from '@/pipeline/runAudit';
 
 export const dynamic = 'force-dynamic';
@@ -57,9 +57,17 @@ export async function GET(req) {
       summary.requeued.push(a.id);
     }
   } else {
-    // 2b) No dedicated worker: process a bounded batch inline (brief §3.1 fallback).
+    // 2b) No heartbeat. If the worker host is just asleep, a ping wakes it within a minute, so
+    //     leave fresh audits to it and only process inline what has waited past that.
+    summary.wokeWorker = await wakeWorker();
+    // No dedicated worker: process a bounded batch inline (brief §3.1 fallback).
     const batch = Number(process.env.CRON_INLINE_BATCH || 1);
-    const queued = await prisma.audit.findMany({ where: { status: 'QUEUED' }, orderBy: { createdAt: 'asc' }, take: batch, select: { id: true } });
+    const queued = await prisma.audit.findMany({
+      where: { status: 'QUEUED', ...(summary.wokeWorker && { createdAt: { lt: new Date(Date.now() - 3 * 60000) } }) },
+      orderBy: { createdAt: 'asc' },
+      take: batch,
+      select: { id: true },
+    });
     for (const a of queued) {
       if (Date.now() - started > 15000) break; // leave room for the run inside maxDuration
       try {
