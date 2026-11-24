@@ -19,7 +19,7 @@ export async function POST(req) {
   const audit = await prisma.audit.create({ data: { clientId, currentStep: 'Queued' } });
   try {
     await auditQueue.add('run-audit', { auditId: audit.id }, { jobId: audit.id });
-    await wakeWorker();
+    await wakeWorker({ force: true });
   } catch (err) {
     // The row stays QUEUED; the cron route re-enqueues or processes it.
     console.error('[API] Failed to enqueue audit', audit.id, err.message);

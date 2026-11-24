@@ -56,6 +56,8 @@ export async function GET(req) {
       await enqueueAudit(a.id).catch(() => {});
       summary.requeued.push(a.id);
     }
+    // Work waiting this long means the "online" worker may have just fallen asleep.
+    if (stale.length) summary.wokeWorker = await wakeWorker({ force: true });
   } else {
     // 2b) No heartbeat. If the worker host is just asleep, a ping wakes it within a minute, so
     //     leave fresh audits to it and only process inline what has waited past that.

@@ -52,14 +52,15 @@ async function isWorkerOnline() {
 }
 
 // Free hosts (Render) put an idle worker to sleep, and a sleeping worker never sees the queue.
-// Any HTTP request to it starts the wake-up, so ping WORKER_URL whenever work is waiting and
-// no heartbeat exists. Returns true if a wake-up ping was sent.
-async function wakeWorker() {
+// Any HTTP request to it starts the wake-up, so ping WORKER_URL when work is waiting. The
+// heartbeat can outlive a worker that just fell asleep (TTL 10 min), so callers that know work
+// is waiting pass force. Returns true if a wake-up ping was sent.
+async function wakeWorker({ force = false } = {}) {
   const url = process.env.WORKER_URL;
-  if (!url || (await isWorkerOnline().catch(() => false))) return false;
+  if (!url || (!force && (await isWorkerOnline().catch(() => false)))) return false;
   // The request only has to reach the host to start the wake-up; don't wait for it to finish.
   await fetch(url, { signal: AbortSignal.timeout(4000) }).catch(() => {});
-  console.log('[QUEUE] Worker offline: sent wake-up ping to', url);
+  console.log('[QUEUE] Sent wake-up ping to', url);
   return true;
 }
 
